@@ -14,9 +14,6 @@ struct CameraState {
     String mediaRemaining = "--";
     int activeMediaSlot = 0;
     String mediaSlotRemaining[3] = {"--", "--", "--"};
-    String incomingSubscription = "none";
-    uint32_t incomingPackets = 0;
-    String lastIncoming = "";
     String model = "";
     String protocolVersion = "";
     String status = "OFFLINE";

@@ -1,61 +1,49 @@
-# BMPCC-FPVLink v1.0.0
+# BMPCC FPVLink v1.0.0
 
-Long-range FPV camera control and DJI OSD telemetry for Blackmagic Pocket Cinema Cameras.
+BMPCC FPVLink links a Blackmagic Pocket Cinema Camera to an FPV drone control system using an ESP32-C3 SuperMini. It provides long-range REC/STOP control from a Betaflight RC channel and sends camera status plus active-media remaining record time to DJI OSD Custom Messages.
 
-BMPCC-FPVLink connects an ESP32-C3 to a Blackmagic Pocket Cinema Camera over Bluetooth and interfaces with a Betaflight flight controller over MSP.
+## Hardware status
 
-## Hardware-proven
+**Hardware proven:** Blackmagic Pocket Cinema Camera 4K.
 
-Tested on:
+Pocket Cinema Camera 6K-family models use the Blackmagic camera-control protocol and are intended compatibility targets, but they are **not yet hardware verified by this project**.
 
-- Blackmagic Pocket Cinema Camera 4K
-- ESP32-C3 SuperMini
-- Betaflight / MSP
-- DJI digital FPV OSD
-- RadioMaster TX16S
+## Proven features
 
-## Features
-
-- Blackmagic Bluetooth connection and control
-- RC switch REC / STOP control through Betaflight MSP
-- DJI OSD REC / STBY messages
-- Active media detection
-- Slot 1, Slot 2 and USB media support
-- Remaining recording time for the active media
+- Blackmagic Bluetooth connection, pairing and automatic reconnect
+- TX16S / Betaflight MSP REC and STOP control
+- Configurable RC channel, threshold and switch direction
+- DJI OSD `REC` / `STBY` status
+- DJI OSD active-media remaining record time
+- Correct Slot 1, Slot 2 and USB/Slot 3 active-media selection on BMPCC 4K
 - Live remaining-time updates while recording
-- Active-media switching with multiple media inserted
-- No-media detection
-- Configurable RC channel
-- Temporary Wi-Fi setup interface
-- Automatic Wi-Fi shutdown after setup
-- Stable Wi-Fi / Bluetooth coexistence
+- Multiple media installed and active-slot switching
+- `MEDIA --` when no media is active
+- Temporary setup Wi-Fi with automatic shutdown
 
-## Wiring
+## Hardware profile
 
 ESP32-C3 SuperMini:
 
-- GPIO6 = RX
-- GPIO7 = TX
-- GND = GND
+- FC TX -> GPIO6 (ESP RX)
+- FC RX -> GPIO7 (ESP TX)
+- GND -> GND
+- Betaflight MSP: 115200 baud
 
-Flight controller TX connects to ESP32 GPIO6.
+The default REC/STOP channel is CH11 and can be changed in the web configurator. GPIO6/GPIO7 are fixed for this hardware profile.
 
-Flight controller RX connects to ESP32 GPIO7.
+## Setup Wi-Fi
 
-MSP baud rate: **115200**
+After flashing, join `BMPCC-FPVLink-XXXX` with password `fpvcinecam32`, then open `192.168.4.1`. If no device joins within 90 seconds after boot, setup Wi-Fi turns off automatically. It returns on the next reboot.
 
-## Status
+## Version history
 
-v1.0.0 is the first hardware-proven BMPCC-FPVLink release.
+`v1.0.0` is the polished BMPCC-specific release derived from the hardware-proven FPVCineCam32 `v0.10.10` baseline. The proven BLE, MSP, REC/STOP, OSD and 9:2/10:1 media decoding paths are intentionally unchanged. Development-only packet capture and web diagnostics were removed for the product release.
 
-The Blackmagic Pocket Cinema Camera 4K implementation is considered the stable baseline for future development.
+## Project relationship
 
-## Project
+BMPCC FPVLink is the stable Blackmagic-specific project. Broader multi-camera development continues separately in FPVCineCam32 / CineCamLink32.
 
-BMPCC-FPVLink is the Blackmagic-specific implementation developed from the broader FPVCineCam32 / CineCamLink32 project.
+## Disclaimer
 
-Future camera implementations can be developed independently without modifying this proven Blackmagic baseline.
-
-## License
-
-MIT License
+Independent open-source project. Not affiliated with, endorsed by, or sponsored by Blackmagic Design, DJI, Betaflight, or their respective owners.

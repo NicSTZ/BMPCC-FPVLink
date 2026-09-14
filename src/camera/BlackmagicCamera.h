@@ -45,10 +45,9 @@ private:
     bool serviceReady = false;
     bool subscriptionsReady = false;
 
-    // v0.10.2: telemetry acquisition only. Incoming camera-control traffic is
-    // deliberately isolated from the proven outgoing REC/STOP path.
+    // Incoming camera-control telemetry is deliberately isolated from the
+    // proven outgoing REC/STOP write path.
     bool incomingSubscribeOk = false;
-    volatile uint32_t incomingPacketCount = 0;
 
     // Pocket 4K media telemetry. Category 9 / parameter 2 carries one
     // little-endian uint16 remaining-time value per media slot. Category 10 /

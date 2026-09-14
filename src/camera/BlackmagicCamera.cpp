@@ -14,7 +14,7 @@ static const NimBLEUUID MODEL_UUID("2A24");
 BlackmagicCamera::BlackmagicCamera() : callbacks(this) { instance = this; }
 
 void BlackmagicCamera::begin() {
-    NimBLEDevice::init("FPVCineCam32");
+    NimBLEDevice::init("BMPCC-FPVLink");
     NimBLEDevice::setPower(3);
     // Bonding + MITM. The BMPCC shows a 6-digit PIN and our web UI injects it.
     NimBLEDevice::setSecurityAuth(true, true, false);
@@ -86,11 +86,7 @@ void BlackmagicCamera::performConnect(const String& address, uint8_t addressType
     mediaSeconds[0] = mediaSeconds[1] = mediaSeconds[2] = 0;
     mediaSecondsSeen = false;
     activeMediaSeen = false;
-    camState.incomingSubscription = "none";
-    camState.incomingPackets = 0;
-    camState.lastIncoming = "";
     incomingSubscribeOk = false;
-    incomingPacketCount = 0;
     postAuthRequested = false;
     camState.status = "CONNECTING BLE";
 
@@ -225,17 +221,13 @@ bool BlackmagicCamera::discoverAndSubscribe() {
     if (statusChar && statusChar->canNotify()) coreOk &= statusChar->subscribe(true, statusNotify);
 
     incomingSubscribeOk = false;
-    camState.incomingSubscription = "none";
     if (incoming) {
         if (incoming->canNotify()) {
-            camState.incomingSubscription = "notify";
             incomingSubscribeOk = incoming->subscribe(true, incomingNotify);
         }
         if (!incomingSubscribeOk && incoming->canIndicate()) {
-            camState.incomingSubscription = "indicate";
             incomingSubscribeOk = incoming->subscribe(false, incomingNotify);
         }
-        if (!incomingSubscribeOk) camState.incomingSubscription = "failed";
     }
 
     subscriptionsReady = coreOk;
@@ -395,8 +387,6 @@ void BlackmagicCamera::forgetPairing() {
 
 void BlackmagicCamera::incomingNotify(NimBLERemoteCharacteristic*, uint8_t* data, size_t len, bool) {
     if (!instance) return;
-    instance->incomingPacketCount++;
-    instance->camState.incomingPackets = (uint32_t)instance->incomingPacketCount;
     instance->parseIncoming(data, len);
 }
 void BlackmagicCamera::timecodeNotify(NimBLERemoteCharacteristic*, uint8_t* data, size_t len, bool) {
@@ -458,18 +448,6 @@ void BlackmagicCamera::refreshMediaRemaining() {
 }
 
 void BlackmagicCamera::parseIncoming(const uint8_t* data, size_t len) {
-    // Keep a short raw snapshot in the web diagnostics. This is invaluable when a
-    // camera firmware revision sends a packet we have not decoded yet.
-    String hex;
-    const size_t dumpLen = len > 48 ? 48 : len;
-    for (size_t i = 0; i < dumpLen; i++) {
-        char b[4];
-        snprintf(b, sizeof(b), "%02X", (unsigned)data[i]);
-        if (i) hex += ' ';
-        hex += b;
-    }
-    camState.lastIncoming = hex;
-
     size_t p = 0;
     while (p + 4 <= len) {
         const uint8_t cmdLen = data[p + 1];

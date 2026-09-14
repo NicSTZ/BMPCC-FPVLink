@@ -1,12 +1,15 @@
-# v0.10.10 ACTIVE MEDIA FIX — focused test
+# BMPCC FPVLink v1.0.0 — release regression test
 
-No diagnostic clearing is required.
+This is a focused release check. The camera-control/media implementation is inherited unchanged from the hardware-proven FPVCineCam32 v0.10.10 baseline.
 
-1. Flash v0.10.10 and let the saved Pocket 4K reconnect.
-2. Slot 1 active: confirm `activeMediaSlot: 1` and `mediaRemaining: 00:24:18`.
-3. Move to slot 2: confirm `activeMediaSlot: 2` and `mediaRemaining: 00:23:37`.
-4. Move to slot 3: confirm `activeMediaSlot: 3` and `mediaRemaining: 01:27:22`.
-5. Remove all media: confirm `activeMediaSlot: 0` and `mediaRemaining: --`.
-6. Quick REC -> STOP regression check.
+1. Flash the GitHub-built v1.0.0 firmware.
+2. Confirm setup AP is named `BMPCC-FPVLink-XXXX` and the configurator shows `BMPCC FPVLink v1.0.0`.
+3. Confirm saved BMPCC 4K pairing/reconnect still works.
+4. Confirm TX16S switch: STBY -> REC -> STBY.
+5. Confirm DJI OSD shows `REC` / `STBY`.
+6. Confirm media remaining updates for Slot 1, Slot 2 and USB/Slot 3.
+7. With no media active, confirm `MEDIA --`.
+8. Confirm MSP stays connected during the test.
+9. Confirm setup Wi-Fi still shuts down after 90 seconds idle and returns after reboot.
 
-If any slot is wrong, one screenshot of Diagnostics at that state is enough.
+Release only after this regression passes on hardware.

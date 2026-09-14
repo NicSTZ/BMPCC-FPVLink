@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>FPVCineCam32 Installer</title>
+  <title>BMPCC FPVLink Installer</title>
 
   <script type="module">
     import("https://unpkg.com/esp-web-tools/dist/web/install-button.js?module");
@@ -24,16 +24,16 @@
 </head>
 <body>
   <main class="card">
-    <h1>FPVCineCam32</h1>
-    <p class="sub">ESP32-C3 SuperMini installer — Blackmagic Pocket Cinema Camera 4K prototype.</p>
-    <div class="version">Firmware v0.10.10 ACTIVE MEDIA FIX</div>
+    <h1>BMPCC FPVLink</h1>
+    <p class="sub">ESP32-C3 SuperMini installer for Blackmagic Pocket Cinema Camera FPV control and DJI OSD telemetry.</p>
+    <div class="version">Firmware v1.0.0</div>
 
     <esp-web-install-button manifest="./manifest.json">
       <span slot="unsupported">Your browser does not support Web Serial. Use Google Chrome or Microsoft Edge on Mac/PC.</span>
       <span slot="not-allowed">Web Serial is blocked because this page is not running over HTTPS.</span>
     </esp-web-install-button>
 
-    <p class="note">After flashing, join <code>FPVCineCam32-XXXX</code> using password <code>fpvcinecam32</code>, then open <code>192.168.4.1</code>.</p>
+    <p class="note">After flashing, join <code>BMPCC-FPVLink-XXXX</code> using password <code>fpvcinecam32</code>, then open <code>192.168.4.1</code>.</p>
   </main>
 </body>
 </html>

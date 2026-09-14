@@ -22,24 +22,8 @@ static bool lastAppliedRecordState = false;
 static bool lastControlReady = false;
 static uint32_t wifiStartedAt = 0;
 static constexpr uint32_t WIFI_SETUP_WINDOW_MS = 90000;
-static uint32_t lastDiagLog = 0;
-static bool lastDiagCamConnected = false;
-static bool lastDiagControlReady = false;
-static wifi_mode_t lastDiagWifiMode = WIFI_MODE_NULL;
-
 static void diagLog(const char* msg) {
     Serial.printf("[%8lu ms] %s\n", (unsigned long)millis(), msg);
-}
-
-static void diagLogState(const char* reason) {
-    const CameraState& c = camera.state();
-    const wifi_mode_t mode = WiFi.getMode();
-    Serial.printf("[%8lu ms] STATE %-12s wifiMode=%d apIP=%s stations=%u camConnected=%d controlReady=%d camStatus=\"%s\" heap=%u\n",
-                  (unsigned long)millis(), reason, (int)mode,
-                  WiFi.softAPIP().toString().c_str(),
-                  (unsigned)WiFi.softAPgetStationNum(),
-                  c.connected ? 1 : 0, c.controlReady ? 1 : 0,
-                  c.status.c_str(), (unsigned)ESP.getFreeHeap());
 }
 
 static bool recordSwitchState(bool& valid) {
@@ -69,7 +53,7 @@ static String osdMediaText() {
 void setup() {
     Serial.begin(115200);
     delay(250);
-    diagLog("BOOT: FPVCineCam32 v0.10.10 ACTIVE MEDIA FIX");
+    diagLog("BOOT: BMPCC FPVLink v1.0.0");
     Serial.printf("[%8lu ms] resetReason=%d freeHeap=%u\n", (unsigned long)millis(), (int)esp_reset_reason(), (unsigned)ESP.getFreeHeap());
     diagLog("SETTINGS: begin");
     settingsStore.begin();
@@ -84,14 +68,12 @@ void setup() {
     // 2.4 GHz radio, so giving SoftAP a clean head start makes setup discovery
     // more predictable without changing the proven Blackmagic BLE control path.
     uint64_t mac = ESP.getEfuseMac();
-    char ap[32]; snprintf(ap,sizeof(ap),"FPVCineCam32-%04X",(uint16_t)(mac&0xffff));
+    char ap[32]; snprintf(ap,sizeof(ap),"BMPCC-FPVLink-%04X",(uint16_t)(mac&0xffff));
     web = new WebUi(settings,settingsStore,camera,msp);
     Serial.printf("[%8lu ms] WIFI: starting SoftAP %s\n", (unsigned long)millis(), ap);
     web->begin(ap);
     wifiStartedAt = millis();
-    diagLogState("after AP");
     delay(750);
-    diagLogState("AP +750ms");
 
     diagLog("BLE: camera.begin");
     camera.begin();
@@ -105,7 +87,6 @@ void setup() {
         diagLog("BLE: no saved auto-connect target");
     }
     msp.requestApiVersion();
-    diagLogState("setup done");
 }
 
 void loop() {
@@ -115,19 +96,6 @@ void loop() {
 
     const uint32_t now=millis();
 
-    // Diagnostic-only logging. No control behavior is changed from v0.10.
-    const CameraState& diagCam = camera.state();
-    const wifi_mode_t diagMode = WiFi.getMode();
-    if (diagCam.connected != lastDiagCamConnected || diagCam.controlReady != lastDiagControlReady || diagMode != lastDiagWifiMode) {
-        lastDiagCamConnected = diagCam.connected;
-        lastDiagControlReady = diagCam.controlReady;
-        lastDiagWifiMode = diagMode;
-        diagLogState("state change");
-    }
-    if (now - lastDiagLog >= 5000) {
-        lastDiagLog = now;
-        diagLogState("periodic");
-    }
     if(now-lastRcRequest>=100){ lastRcRequest=now; msp.requestRc(); }
     if(now-lastApiRequest>=5000){ lastApiRequest=now; msp.requestApiVersion(); }
 
