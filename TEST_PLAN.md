@@ -13,3 +13,13 @@ This is a focused release check. The camera-control/media implementation is inhe
 9. Confirm setup Wi-Fi still shuts down after 90 seconds idle and returns after reboot.
 
 Release only after this regression passes on hardware.
+
+
+## RC3 release checks
+
+- Installer page identifies BMPCC FPVLink v1.0.0.
+- Setup Wi-Fi SSID begins `BMPCC-FPVLink-` and does not use a generic `ESP_` name.
+- Setup Wi-Fi password is `FPVLink`.
+- Betaflight Connection card shows Status, MSP API and Last RC response latency.
+- Wiring is displayed as FC TX -> GPIO6 (ESP RX), FC RX -> GPIO7 (ESP TX), GND -> GND.
+- No OSD slot selector, OSD test button, raw diagnostics page, or visible BMD READY status appears in the normal UI.

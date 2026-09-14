@@ -6,7 +6,7 @@ const char WebUi::PAGE[] PROGMEM = R"HTML(
 <style>
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;max-width:820px;margin:24px auto;padding:0 16px;background:#111;color:#eee}
 h1{margin-bottom:4px}.sub{color:#aaa;margin-bottom:16px}.card{background:#1c1c1e;border-radius:14px;padding:16px;margin:14px 0}h3{margin-top:0}
-button,input,select{font-size:16px;padding:10px;margin:5px 5px 5px 0;border-radius:8px;border:1px solid #555;background:#29292c;color:#fff}button{cursor:pointer}.ok{color:#6ee787}.warn{color:#ffd866}.muted{color:#aaa}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.channels{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.ch{background:#252528;border-radius:8px;padding:8px;text-align:center}.ch b{display:block;font-size:13px;color:#aaa}.ch span{font-size:18px}.selected{outline:2px solid #6ee787}.statusBadge{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;font-weight:600;margin-bottom:8px}.statusBadge::before{content:"";width:10px;height:10px;border-radius:50%;background:currentColor}.statusOnline{color:#6ee787;background:#17351f}.statusOffline{color:#ff6b6b;background:#3a1b1b}pre{white-space:pre-wrap;word-break:break-word}@media(max-width:600px){.grid{grid-template-columns:1fr}.channels{grid-template-columns:repeat(2,1fr)}}
+button,input,select{font-size:16px;padding:10px;margin:5px 5px 5px 0;border-radius:8px;border:1px solid #555;background:#29292c;color:#fff}button{cursor:pointer}.ok{color:#6ee787}.warn{color:#ffd866}.muted{color:#aaa}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.channels{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.ch{background:#252528;border-radius:8px;padding:8px;text-align:center}.ch b{display:block;font-size:13px;color:#aaa}.ch span{font-size:18px}.selected{outline:2px solid #6ee787}.statusBadge{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;font-weight:600;margin-bottom:8px}.statusBadge::before{content:"";width:10px;height:10px;border-radius:50%;background:currentColor}.statusOnline{color:#6ee787;background:#17351f}.statusOffline{color:#ff6b6b;background:#3a1b1b}.mspStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 18px}.mspStat{background:#252528;border-radius:10px;padding:12px}.mspStat b{display:block;color:#aaa;font-size:13px;margin-bottom:4px}.mspStat span{font-size:18px}.wiring{background:#252528;border-radius:10px;padding:12px;line-height:1.8;margin-bottom:16px}.wiring div{display:flex;gap:8px;align-items:baseline}.wiring code{min-width:76px;color:#fff}.arrow{color:#6ee787;font-weight:700}pre{white-space:pre-wrap;word-break:break-word}@media(max-width:600px){.grid{grid-template-columns:1fr}.channels{grid-template-columns:repeat(2,1fr)}.mspStats{grid-template-columns:1fr}}
 </style></head><body>
 <h1>BMPCC FPVLink <small>v1.0.0</small></h1><div class=sub>Blackmagic Pocket Cinema Camera control + DJI OSD telemetry</div>
 
@@ -26,11 +26,20 @@ button,input,select{font-size:16px;padding:10px;margin:5px 5px 5px 0;border-radi
 <button onclick=saveMapping()>Save mapping</button><span id=saveMsg class=muted></span>
 </div>
 
-<div class=card><h3>Betaflight / MSP</h3>
-<p>ESP32-C3 SuperMini wiring is fixed: <b>FC TX -> GPIO6 (ESP RX)</b>, <b>FC RX -> GPIO7 (ESP TX)</b>, <b>GND -> GND</b>. Enable <b>MSP at 115200</b> on that Betaflight UART.</p>
-<div id=mspSummary class=muted>Waiting for FC...</div>
+<div class=card><h3>Betaflight Connection</h3>
+<p class=muted>Use one free Betaflight UART with MSP enabled at <b>115200 baud</b>.</p>
+<div class=mspStats>
+  <div class=mspStat><b>Status</b><span id=mspStatus>Waiting...</span></div>
+  <div class=mspStat><b>MSP API</b><span id=mspApi>--</span></div>
+  <div class=mspStat><b>Last RC response</b><span id=mspResponse>-- ms</span></div>
+</div>
+<h4>Wiring</h4>
+<div class=wiring>
+  <div><code>FC TX</code><span class=arrow>→</span><b>GPIO6</b><span class=muted>(ESP RX)</span></div>
+  <div><code>FC RX</code><span class=arrow>→</span><b>GPIO7</b><span class=muted>(ESP TX)</span></div>
+  <div><code>GND</code><span class=arrow>→</span><b>GND</b></div>
+</div>
 <h4>Live RC channels</h4><div id=channels class=channels></div>
-
 <p class=muted>DJI OSD output is automatic: REC/STBY and remaining record time are sent by the firmware.</p>
 </div>
 
@@ -68,10 +77,13 @@ async function refresh(){
     const linked=s.camera.connected && s.camera.controlReady;
     el('camBadge').className='statusBadge '+(linked?'statusOnline':'statusOffline');
     el('camBadge').textContent=linked?'Camera connected':'Camera disconnected';
-    el('mspSummary').textContent=s.msp.connected?`MSP connected | API ${s.msp.api} | last RC response ${s.msp.responseMs} ms`:'MSP offline - check UART wiring and Betaflight Ports';
+    el('mspStatus').textContent=s.msp.connected?'Connected':'Offline';
+    el('mspStatus').className=s.msp.connected?'ok':'warn';
+    el('mspApi').textContent=s.msp.connected?s.msp.api:'--';
+    el('mspResponse').textContent=s.msp.connected?`${s.msp.responseMs} ms`:'-- ms';
     el('ch').value=s.settings.channel;el('thr').value=s.settings.threshold;el('high').value=s.settings.high?1:0;
     drawChannels(s);
-  }catch(e){el('mspSummary').textContent='ESP web API unavailable'}
+  }catch(e){el('mspStatus').textContent='Unavailable';el('mspStatus').className='warn';el('mspApi').textContent='--';el('mspResponse').textContent='-- ms'}
 }
 async function scan(){
   el('cams').textContent='Scanning...';
@@ -88,8 +100,9 @@ setInterval(refresh,1500);refresh();
 </script></body></html>)HTML";
 
 void WebUi::begin(const String& apName) {
+    static constexpr const char* SETUP_WIFI_PASSWORD = "FPVLink";
     WiFi.mode(WIFI_AP);
-    WiFi.softAP(apName.c_str(), "FPVLink");
+    WiFi.softAP(apName.c_str(), SETUP_WIFI_PASSWORD);
     routes();
     server.begin();
     running=true;
