@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FPVCineCam32 Installer</title>
+
+  <script type="module">
+    import("https://unpkg.com/esp-web-tools/dist/web/install-button.js?module");
+  </script>
+
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; padding:24px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#101114; color:#f5f5f5; }
+    .card { width:min(680px,100%); padding:28px; border-radius:18px; background:#1c1d21; border:1px solid #303238; }
+    h1 { margin:0 0 8px; font-size:34px; }
+    .sub { margin:0 0 14px; color:#c7c9ce; }
+    .version { display:inline-block; margin-bottom:18px; padding:5px 9px; border-radius:7px; background:#2b2d33; font-weight:700; }
+    esp-web-install-button { display:block; margin:10px 0 22px; --esp-tools-button-color:#fff; --esp-tools-button-text-color:#111; --esp-tools-button-border-radius:10px; }
+    code { background:#292b31; padding:3px 6px; border-radius:5px; }
+    .note { color:#b9bbc1; line-height:1.5; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>FPVCineCam32</h1>
+    <p class="sub">ESP32-C3 SuperMini installer — Blackmagic Pocket Cinema Camera 4K prototype.</p>
+    <div class="version">Firmware v0.10.10 ACTIVE MEDIA FIX</div>
+
+    <esp-web-install-button manifest="./manifest.json">
+      <span slot="unsupported">Your browser does not support Web Serial. Use Google Chrome or Microsoft Edge on Mac/PC.</span>
+      <span slot="not-allowed">Web Serial is blocked because this page is not running over HTTPS.</span>
+    </esp-web-install-button>
+
+    <p class="note">After flashing, join <code>FPVCineCam32-XXXX</code> using password <code>fpvcinecam32</code>, then open <code>192.168.4.1</code>.</p>
+  </main>
+</body>
+</html>

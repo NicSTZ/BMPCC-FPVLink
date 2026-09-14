@@ -1,0 +1,42 @@
+#pragma once
+#include <Arduino.h>
+
+struct CameraState {
+    bool connected = false;
+    bool paired = false;
+    bool ready = false;
+    bool recording = false;
+    int batteryPercent = -1;
+    int iso = -1;
+    int whiteBalance = -1;
+    float fps = 0.0f;
+    String timecode = "--:--:--:--";
+    String mediaRemaining = "--";
+    int activeMediaSlot = 0;
+    String mediaSlotRemaining[3] = {"--", "--", "--"};
+    String incomingSubscription = "none";
+    uint32_t incomingPackets = 0;
+    String lastIncoming = "";
+    String model = "";
+    String protocolVersion = "";
+    String status = "OFFLINE";
+    String lastCommand = "";
+    String lastWrite = "";
+    bool controlReady = false;
+};
+
+class ICameraBackend {
+public:
+    virtual ~ICameraBackend() = default;
+    virtual void begin() = 0;
+    virtual void loop() = 0;
+    virtual bool startScan(String& jsonOut) = 0;
+    virtual bool connectTo(const String& address, uint8_t addressType) = 0;
+    virtual void disconnect() = 0;
+    virtual bool setRecording(bool on) = 0;
+    virtual bool toggleRecording() = 0;
+    virtual void forgetPairing() = 0;
+    virtual bool submitPasskey(uint32_t pin) = 0;
+    virtual bool waitingForPasskey() const = 0;
+    virtual const CameraState& state() const = 0;
+};
