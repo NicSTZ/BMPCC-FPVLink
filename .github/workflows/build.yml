@@ -2,7 +2,7 @@ name: Build FPVCineCam32
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'release/**']
     paths-ignore:
       - 'docs/firmware/**'
   workflow_dispatch:
