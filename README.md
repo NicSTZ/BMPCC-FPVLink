@@ -34,7 +34,7 @@ The default REC/STOP channel is CH11 and can be changed in the web configurator.
 
 ## Setup Wi-Fi
 
-After flashing, join `BMPCC-FPVLink-XXXX` with password `FPVLink`, then open `192.168.4.1`. If no device joins within 90 seconds after boot, setup Wi-Fi turns off automatically. It returns on the next reboot.
+After flashing, join `BMPCC-FPVLink-XXXX` with password `FPVLink32`, then open `192.168.4.1`. If no device joins within 90 seconds after boot, setup Wi-Fi turns off automatically. It returns on the next reboot.
 
 ## Version history
 

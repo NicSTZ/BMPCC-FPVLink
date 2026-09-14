@@ -6,7 +6,7 @@ const char WebUi::PAGE[] PROGMEM = R"HTML(
 <style>
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;max-width:820px;margin:24px auto;padding:0 16px;background:#111;color:#eee}
 h1{margin-bottom:4px}.sub{color:#aaa;margin-bottom:16px}.card{background:#1c1c1e;border-radius:14px;padding:16px;margin:14px 0}h3{margin-top:0}
-button,input,select{font-size:16px;padding:10px;margin:5px 5px 5px 0;border-radius:8px;border:1px solid #555;background:#29292c;color:#fff}button{cursor:pointer}.ok{color:#6ee787}.warn{color:#ffd866}.muted{color:#aaa}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.channels{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.ch{background:#252528;border-radius:8px;padding:8px;text-align:center}.ch b{display:block;font-size:13px;color:#aaa}.ch span{font-size:18px}.selected{outline:2px solid #6ee787}.statusBadge{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;font-weight:600;margin-bottom:8px}.statusBadge::before{content:"";width:10px;height:10px;border-radius:50%;background:currentColor}.statusOnline{color:#6ee787;background:#17351f}.statusOffline{color:#ff6b6b;background:#3a1b1b}.mspStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 18px}.mspStat{background:#252528;border-radius:10px;padding:12px}.mspStat b{display:block;color:#aaa;font-size:13px;margin-bottom:4px}.mspStat span{font-size:18px}.wiring{background:#252528;border-radius:10px;padding:12px;line-height:1.8;margin-bottom:16px}.wiring div{display:flex;gap:8px;align-items:baseline}.wiring code{min-width:76px;color:#fff}.arrow{color:#6ee787;font-weight:700}pre{white-space:pre-wrap;word-break:break-word}@media(max-width:600px){.grid{grid-template-columns:1fr}.channels{grid-template-columns:repeat(2,1fr)}.mspStats{grid-template-columns:1fr}}
+button,input,select{font-size:16px;padding:10px;margin:5px 5px 5px 0;border-radius:8px;border:1px solid #555;background:#29292c;color:#fff}button{cursor:pointer}.ok{color:#6ee787}.warn{color:#ffd866}.muted{color:#aaa}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.channels{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.ch{background:#252528;border-radius:8px;padding:8px;text-align:center}.ch b{display:block;font-size:13px;color:#aaa}.ch span{font-size:18px}.selected{outline:2px solid #6ee787}.statusBadge{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;font-weight:600;margin-bottom:8px}.statusBadge::before{content:"";width:10px;height:10px;border-radius:50%;background:currentColor}.statusOnline{color:#6ee787;background:#17351f}.statusOffline{color:#ff6b6b;background:#3a1b1b}.mspStats{background:#252528;border-radius:10px;padding:4px 14px;margin:10px 0 18px}.mspStat{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid #38383b}.mspStat:last-child{border-bottom:0}.mspStat b{color:#aaa;font-size:15px}.mspStat span{font-size:16px;text-align:right}.wiring{background:#252528;border-radius:10px;padding:12px;line-height:1.8;margin-bottom:16px}.wiring div{display:flex;gap:8px;align-items:baseline}.wireLabel{min-width:76px;color:#eee;font-weight:600}.arrow{color:#6ee787;font-weight:700}pre{white-space:pre-wrap;word-break:break-word}@media(max-width:600px){.grid{grid-template-columns:1fr}.channels{grid-template-columns:repeat(2,1fr)}}
 </style></head><body>
 <h1>BMPCC FPVLink <small>v1.0.0</small></h1><div class=sub>Blackmagic Pocket Cinema Camera control + DJI OSD telemetry</div>
 
@@ -35,9 +35,9 @@ button,input,select{font-size:16px;padding:10px;margin:5px 5px 5px 0;border-radi
 </div>
 <h4>Wiring</h4>
 <div class=wiring>
-  <div><code>FC TX</code><span class=arrow>→</span><b>GPIO6</b><span class=muted>(ESP RX)</span></div>
-  <div><code>FC RX</code><span class=arrow>→</span><b>GPIO7</b><span class=muted>(ESP TX)</span></div>
-  <div><code>GND</code><span class=arrow>→</span><b>GND</b></div>
+  <div><span class=wireLabel>FC TX</span><span class=arrow>→</span><b>GPIO6</b><span class=muted>(ESP RX)</span></div>
+  <div><span class=wireLabel>FC RX</span><span class=arrow>→</span><b>GPIO7</b><span class=muted>(ESP TX)</span></div>
+  <div><span class=wireLabel>GND</span><span class=arrow>→</span><b>GND</b></div>
 </div>
 <h4>Live RC channels</h4><div id=channels class=channels></div>
 <p class=muted>DJI OSD output is automatic: REC/STBY and remaining record time are sent by the firmware.</p>
@@ -100,7 +100,11 @@ setInterval(refresh,1500);refresh();
 </script></body></html>)HTML";
 
 void WebUi::begin(const String& apName) {
-    static constexpr const char* SETUP_WIFI_PASSWORD = "FPVLink";
+    static constexpr const char* SETUP_WIFI_PASSWORD = "FPVLink32";
+    // WPA2 SoftAP passwords must be at least 8 characters. Clear any saved
+    // SoftAP state first so upgrades cannot retain an older generic ESP_* AP.
+    WiFi.softAPdisconnect(true);
+    delay(100);
     WiFi.mode(WIFI_AP);
     WiFi.softAP(apName.c_str(), SETUP_WIFI_PASSWORD);
     routes();
