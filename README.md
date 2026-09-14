@@ -1,15 +1,61 @@
-# FPVCineCam32 v0.10.10 ACTIVE MEDIA FIX
+# BMPCC-FPVLink v1.0.0
 
-Targeted correction on top of v0.10.9.
+Long-range FPV camera control and DJI OSD telemetry for Blackmagic Pocket Cinema Cameras.
 
-## Change
+BMPCC-FPVLink connects an ESP32-C3 to a Blackmagic Pocket Cinema Camera over Bluetooth and interfaces with a Betaflight flight controller over MSP.
 
-- Corrects the 10:1 receive decoder to accept camera-originated operation `2` telemetry as well as operation `0` control-state packets.
-- Keeps the proven Pocket 4K active-media mapping: flag `0x20` = slot 1, `0x40` = slot 2, and captured Pocket 4K extension `0x10` = slot 3 / USB.
-- Active slot selects the matching decoded 9:2 remaining-time value. A zero active-media mask clears the display to `MEDIA --`.
+## Hardware-proven
 
-## Deliberately unchanged
+Tested on:
 
-BLE connection/pairing, REC/STOP writes, Wi-Fi behavior, MSP/OSD, RC mapping, GPIO6/7, and 9:2 media-time decoding are unchanged from v0.10.9.
+- Blackmagic Pocket Cinema Camera 4K
+- ESP32-C3 SuperMini
+- Betaflight / MSP
+- DJI digital FPV OSD
+- RadioMaster TX16S
 
-Known-good fallback remains **v0.10.6 MEDIA REMAINING**.
+## Features
+
+- Blackmagic Bluetooth connection and control
+- RC switch REC / STOP control through Betaflight MSP
+- DJI OSD REC / STBY messages
+- Active media detection
+- Slot 1, Slot 2 and USB media support
+- Remaining recording time for the active media
+- Live remaining-time updates while recording
+- Active-media switching with multiple media inserted
+- No-media detection
+- Configurable RC channel
+- Temporary Wi-Fi setup interface
+- Automatic Wi-Fi shutdown after setup
+- Stable Wi-Fi / Bluetooth coexistence
+
+## Wiring
+
+ESP32-C3 SuperMini:
+
+- GPIO6 = RX
+- GPIO7 = TX
+- GND = GND
+
+Flight controller TX connects to ESP32 GPIO6.
+
+Flight controller RX connects to ESP32 GPIO7.
+
+MSP baud rate: **115200**
+
+## Status
+
+v1.0.0 is the first hardware-proven BMPCC-FPVLink release.
+
+The Blackmagic Pocket Cinema Camera 4K implementation is considered the stable baseline for future development.
+
+## Project
+
+BMPCC-FPVLink is the Blackmagic-specific implementation developed from the broader FPVCineCam32 / CineCamLink32 project.
+
+Future camera implementations can be developed independently without modifying this proven Blackmagic baseline.
+
+## License
+
+MIT License
