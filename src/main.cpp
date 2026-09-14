@@ -22,9 +22,6 @@ static bool lastAppliedRecordState = false;
 static bool lastControlReady = false;
 static uint32_t wifiStartedAt = 0;
 static constexpr uint32_t WIFI_SETUP_WINDOW_MS = 90000;
-static void diagLog(const char* msg) {
-    Serial.printf("[%8lu ms] %s\n", (unsigned long)millis(), msg);
-}
 
 static bool recordSwitchState(bool& valid) {
     const int idx = settings.recordChannel - 1;
@@ -53,15 +50,10 @@ static String osdMediaText() {
 void setup() {
     Serial.begin(115200);
     delay(250);
-    diagLog("BOOT: BMPCC FPVLink v1.0.0");
-    Serial.printf("[%8lu ms] resetReason=%d freeHeap=%u\n", (unsigned long)millis(), (int)esp_reset_reason(), (unsigned)ESP.getFreeHeap());
-    diagLog("SETTINGS: begin");
     settingsStore.begin();
     settings = settingsStore.load();
-    Serial.printf("[%8lu ms] SETTINGS: autoConnect=%d savedCamera=%s\n", (unsigned long)millis(), settings.autoConnect ? 1 : 0, settings.cameraAddress.c_str());
 
     // ESP32-C3 SuperMini hardware profile. Keep these fixed so wiring is predictable.
-    diagLog("MSP: begin UART6/7 @115200");
     msp.begin(ESP_RX_PIN, ESP_TX_PIN, MSP_BAUD);
 
     // Bring the setup AP up before starting BLE. Wi-Fi and BLE share the C3's
@@ -70,21 +62,16 @@ void setup() {
     uint64_t mac = ESP.getEfuseMac();
     char ap[32]; snprintf(ap,sizeof(ap),"BMPCC-FPVLink-%04X",(uint16_t)(mac&0xffff));
     web = new WebUi(settings,settingsStore,camera,msp);
-    Serial.printf("[%8lu ms] WIFI: starting SoftAP %s\n", (unsigned long)millis(), ap);
     web->begin(ap);
     wifiStartedAt = millis();
     delay(750);
 
-    diagLog("BLE: camera.begin");
     camera.begin();
-    diagLog("BLE: initialized");
     camera.setSavedTarget(settings.cameraAddress, settings.cameraAddressType);
 
     if (settings.autoConnect && settings.cameraAddress.length()) {
-        diagLog("BLE: queue saved camera reconnect");
         camera.connectTo(settings.cameraAddress,settings.cameraAddressType);
     } else {
-        diagLog("BLE: no saved auto-connect target");
     }
     msp.requestApiVersion();
 }
@@ -132,7 +119,6 @@ void loop() {
     // connected, keep setup alive until it disconnects or the user presses
     // "Disable Wi-Fi now" in the configurator. Wi-Fi returns on every reboot.
     if (web && web->active() && (now - wifiStartedAt >= WIFI_SETUP_WINDOW_MS) && WiFi.softAPgetStationNum() == 0) {
-        diagLog("WIFI: 90s idle timeout -> stop");
         web->stopWifi();
     }
 

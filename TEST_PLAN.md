@@ -1,6 +1,6 @@
 # BMPCC FPVLink v1.0.0 — release regression test
 
-This is a focused release check. The camera-control/media implementation is inherited unchanged from the hardware-proven FPVCineCam32 v0.10.10 baseline.
+This is a focused release check. The camera-control/media implementation is inherited unchanged from the hardware-proven v0.10.10 Blackmagic baseline.
 
 1. Flash the GitHub-built v1.0.0 firmware.
 2. Confirm setup AP is named `BMPCC-FPVLink-XXXX` and the configurator shows `BMPCC FPVLink v1.0.0`.

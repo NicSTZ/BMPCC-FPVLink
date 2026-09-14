@@ -34,15 +34,15 @@ The default REC/STOP channel is CH11 and can be changed in the web configurator.
 
 ## Setup Wi-Fi
 
-After flashing, join `BMPCC-FPVLink-XXXX` with password `fpvcinecam32`, then open `192.168.4.1`. If no device joins within 90 seconds after boot, setup Wi-Fi turns off automatically. It returns on the next reboot.
+After flashing, join `BMPCC-FPVLink-XXXX` with password `FPVLink`, then open `192.168.4.1`. If no device joins within 90 seconds after boot, setup Wi-Fi turns off automatically. It returns on the next reboot.
 
 ## Version history
 
-`v1.0.0` is the polished BMPCC-specific release derived from the hardware-proven FPVCineCam32 `v0.10.10` baseline. The proven BLE, MSP, REC/STOP, OSD and 9:2/10:1 media decoding paths are intentionally unchanged. Development-only packet capture and web diagnostics were removed for the product release.
+`v1.0.0` is the polished BMPCC-specific release derived from the hardware-proven `v0.10.10` Blackmagic baseline. The proven BLE, MSP, REC/STOP, OSD and 9:2/10:1 media decoding paths are intentionally unchanged. Development-only packet capture and web diagnostics were removed for the product release.
 
 ## Project relationship
 
-BMPCC FPVLink is the stable Blackmagic-specific project. Broader multi-camera development continues separately in FPVCineCam32 / CineCamLink32.
+BMPCC FPVLink is the stable Blackmagic-specific project. Broader multi-camera development continues separately in CineCamLink32.
 
 ## Disclaimer
 

@@ -31,9 +31,7 @@ button,input,select{font-size:16px;padding:10px;margin:5px 5px 5px 0;border-radi
 <div id=mspSummary class=muted>Waiting for FC...</div>
 <h4>Live RC channels</h4><div id=channels class=channels></div>
 
-<label>OSD Custom Message slot <select id=slot><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
-<button onclick=saveOsd()>Save OSD slot</button><button onclick=testosd()>Send OSD test</button>
-<p><b>Status message:</b> <span id=osdLive class=muted>Waiting...</span></p><p class=muted>REC/STBY uses the selected Custom Message slot. Remaining record time uses the next slot.</p>
+<p class=muted>DJI OSD output is automatic: REC/STBY and remaining record time are sent by the firmware.</p>
 </div>
 
 <div class=card><h3>Setup Wi-Fi</h3>
@@ -51,13 +49,6 @@ function cameraLine(c){
   const ready=c.controlReady?'Control ready':'Control not ready';
   const rec=c.recording?'RECORDING':'Standby';
   return `${link} | ${ready} | ${rec} | ${c.timecode}`;
-}
-function osdPreview(c){
-  if(!c.connected) return 'BMD OFFLINE';
-  if(c.waitingPin) return 'BMD ENTER PIN';
-  if(c.recording) return `REC ${c.timecode}`;
-  if(c.ready || c.paired) return `BMD STBY ${c.timecode}`;
-  return c.status || 'BMD';
 }
 function drawChannels(s){
   const box=el('channels');box.innerHTML='';
@@ -77,9 +68,8 @@ async function refresh(){
     const linked=s.camera.connected && s.camera.controlReady;
     el('camBadge').className='statusBadge '+(linked?'statusOnline':'statusOffline');
     el('camBadge').textContent=linked?'Camera connected':'Camera disconnected';
-    el('osdLive').textContent=osdPreview(s.camera);
     el('mspSummary').textContent=s.msp.connected?`MSP connected | API ${s.msp.api} | last RC response ${s.msp.responseMs} ms`:'MSP offline - check UART wiring and Betaflight Ports';
-    el('ch').value=s.settings.channel;el('thr').value=s.settings.threshold;el('high').value=s.settings.high?1:0;el('slot').value=s.settings.slot;
+    el('ch').value=s.settings.channel;el('thr').value=s.settings.threshold;el('high').value=s.settings.high?1:0;
     drawChannels(s);
   }catch(e){el('mspSummary').textContent='ESP web API unavailable'}
 }
@@ -92,46 +82,36 @@ async function sendPin(){const v=el('pinval').value.trim();if(!/^\d{6}$/.test(v)
 async function forget(){await api('/api/forget');refresh()}
 async function rec(v){await api('/api/record?on='+v);setTimeout(refresh,250)}
 async function saveMapping(){await api(`/api/saveMapping?ch=${el('ch').value}&thr=${el('thr').value}&high=${el('high').value}`);el('saveMsg').textContent='Saved';setTimeout(()=>el('saveMsg').textContent='',1200);refresh()}
-async function saveOsd(){await api('/api/saveOsd?slot='+el('slot').value);refresh()}
-async function testosd(){await api('/api/osdtest')}
 async function wifiOff(){try{await api('/api/wifioff');}catch(e){} }
 
 setInterval(refresh,1500);refresh();
 </script></body></html>)HTML";
 
 void WebUi::begin(const String& apName) {
-    const uint32_t t0 = millis();
     WiFi.mode(WIFI_AP);
-    const bool apOk = WiFi.softAP(apName.c_str(), "fpvcinecam32");
-    Serial.printf("[%8lu ms] WIFI: softAP() returned %s in %lu ms, mode=%d, ip=%s\n",
-                  (unsigned long)millis(), apOk ? "TRUE" : "FALSE",
-                  (unsigned long)(millis() - t0), (int)WiFi.getMode(),
-                  WiFi.softAPIP().toString().c_str());
+    WiFi.softAP(apName.c_str(), "FPVLink");
     routes();
     server.begin();
     running=true;
-    Serial.printf("[%8lu ms] WIFI: web server started\n", (unsigned long)millis());
 }
 void WebUi::loop(){ if(running) server.handleClient(); if(stopRequested && millis() >= stopAtMs){ stopRequested=false; stopWifi(); } }
 void WebUi::stopWifi(){
     if(!running)return;
-    Serial.printf("[%8lu ms] WIFI: stopping AP, stations=%u\n", (unsigned long)millis(), (unsigned)WiFi.softAPgetStationNum());
     server.stop();
     WiFi.softAPdisconnect(true);
     WiFi.mode(WIFI_OFF);
     running=false;
-    Serial.printf("[%8lu ms] WIFI: stopped, mode=%d\n", (unsigned long)millis(), (int)WiFi.getMode());
 }
 
 String WebUi::statusJson(){
     const CameraState& c=cam.state();
     String j="{\"camera\":{";
-    j += "\"status\":\""+c.status+"\",\"model\":\""+c.model+"\",\"connected\":"+String(c.connected?"true":"false")+",\"paired\":"+String(c.paired?"true":"false")+",\"ready\":"+String(c.ready?"true":"false")+",\"controlReady\":"+String(c.controlReady?"true":"false")+",\"recording\":"+String(c.recording?"true":"false")+",\"timecode\":\""+c.timecode+"\",\"mediaRemaining\":\""+c.mediaRemaining+"\",\"waitingPin\":"+String(cam.waitingForPasskey()?"true":"false")+"},";
+    j += "\"model\":\""+c.model+"\",\"connected\":"+String(c.connected?"true":"false")+",\"paired\":"+String(c.paired?"true":"false")+",\"ready\":"+String(c.ready?"true":"false")+",\"controlReady\":"+String(c.controlReady?"true":"false")+",\"recording\":"+String(c.recording?"true":"false")+",\"timecode\":\""+c.timecode+"\",\"mediaRemaining\":\""+c.mediaRemaining+"\",\"waitingPin\":"+String(cam.waitingForPasskey()?"true":"false")+"},";
     j += "\"msp\":{\"connected\":"+String(mspClient.connected()?"true":"false")+",\"rcFresh\":"+String(mspClient.rcFresh()?"true":"false")+",\"api\":\""+String(mspClient.apiMajor())+"."+String(mspClient.apiMinor())+"\",\"responseMs\":"+String(mspClient.lastResponseMs())+",\"channels\":[";
     const size_t count = min(mspClient.rcCount(), (size_t)16);
     for(size_t i=0;i<count;i++){ if(i)j+=','; j+=String(mspClient.rcValue(i)); }
     j += "]},";
-    j += "\"settings\":{\"rx\":6,\"tx\":7,\"baud\":115200,\"channel\":"+String(s.recordChannel)+",\"threshold\":"+String(s.recordThreshold)+",\"high\":"+String(s.recordActiveHigh?"true":"false")+",\"slot\":"+String(s.osdSlot)+"}}";
+    j += "\"settings\":{\"rx\":6,\"tx\":7,\"baud\":115200,\"channel\":"+String(s.recordChannel)+",\"threshold\":"+String(s.recordThreshold)+",\"high\":"+String(s.recordActiveHigh?"true":"false")+"}}";
     return j;
 }
 
@@ -145,7 +125,5 @@ void WebUi::routes(){
     server.on("/api/pin",HTTP_GET,[this](){uint32_t p=(uint32_t)server.arg("value").toInt();bool ok=cam.submitPasskey(p);server.send(200,"application/json",String("{\"ok\":")+(ok?"true":"false")+"}");});
     server.on("/api/forget",HTTP_GET,[this](){cam.forgetPairing();prefs.clearCamera();s.cameraAddress="";server.send(200,"application/json","{\"ok\":true}");});
     server.on("/api/record",HTTP_GET,[this](){bool on=server.arg("on").toInt()!=0;bool ok=cam.setRecording(on);server.send(200,"application/json",String("{\"ok\":")+(ok?"true":"false")+"}");});
-    server.on("/api/osdtest",HTTP_GET,[this](){mspClient.setCustomText(s.osdSlot,"REC TEST"); if(s.osdSlot<3)mspClient.setCustomText(s.osdSlot+1,"MEDIA TEST"); server.send(200,"application/json","{\"ok\":true}");});
     server.on("/api/saveMapping",HTTP_GET,[this](){s.recordChannel=constrain(server.arg("ch").toInt(),1,16);s.recordThreshold=constrain(server.arg("thr").toInt(),800,2200);s.recordActiveHigh=server.arg("high").toInt()!=0;prefs.save(s);server.send(200,"application/json","{\"ok\":true}");});
-    server.on("/api/saveOsd",HTTP_GET,[this](){s.osdSlot=constrain(server.arg("slot").toInt(),0,3);prefs.save(s);server.send(200,"application/json","{\"ok\":true}");});
 }
